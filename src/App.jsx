@@ -12,9 +12,9 @@ import DeveloperPortfolio from './components/DeveloperPortfolio';
 function App() {
   const [username, setUsername] = useState('');
   const [mode, setMode] = useState('light');
-  
+
   const [inputUsername, setInputUsername] = useState('');
-  
+
   // Phase 2 state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -61,14 +61,14 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const urlUsername = params.get('username') || '';
     const urlMode = params.get('mode') || 'light';
-    
+
     setUsername(urlUsername);
     setMode(urlMode);
-    
+
     document.documentElement.setAttribute('data-theme', urlMode);
-    
+
     const isDeveloperMode = window.location.pathname.startsWith('/developer');
-    
+
     if (urlUsername && !isDeveloperMode) {
       fetchGitHubData(urlUsername);
     }
@@ -102,7 +102,7 @@ function App() {
     repos.forEach(r => {
       if (r.language) {
         // size in GitHub repos API is generally KB but it works as a relative weight proxy
-        langCounts[r.language] = (langCounts[r.language] || 0) + (r.size || 1); 
+        langCounts[r.language] = (langCounts[r.language] || 0) + (r.size || 1);
       }
     });
     const topSkills = Object.entries(langCounts)
@@ -111,7 +111,7 @@ function App() {
       .map(entry => entry[0]);
 
     // Activity: last 5-10 meaningful events
-    const meaningfulEvents = events.filter(e => 
+    const meaningfulEvents = events.filter(e =>
       ['PushEvent', 'PullRequestEvent', 'IssuesEvent', 'ReleaseEvent', 'CreateEvent'].includes(e.type)
     ).slice(0, 10);
 
@@ -205,9 +205,9 @@ function App() {
   if (error) {
     return (
       <div className="container loading-view">
-        <h2 style={{color: 'var(--error)'}}>Whoops! Error loading data.</h2>
+        <h2 style={{ color: 'var(--error)' }}>Whoops! Error loading data.</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.href = '/'} className="btn-primary" style={{marginTop: '2rem', maxWidth: '200px'}}>Go Back</button>
+        <button onClick={() => window.location.href = '/'} className="btn-primary" style={{ marginTop: '2rem', maxWidth: '200px' }}>Go Back</button>
       </div>
     );
   }
@@ -223,7 +223,7 @@ function App() {
       <Hero profile={profile} />
       <Skills skills={skills} />
       <Projects projects={projects} />
-      <Activity activity={activity} />
+      {/* <Activity activity={activity} /> */}
       <Contact links={links} />
 
       <div className={`toast ${toast ? 'show' : ''}`}>{toast}</div>
