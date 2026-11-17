@@ -46,6 +46,9 @@ export default function Landing({ handleStart, inputUsername, setInputUsername, 
                 autoComplete="off"
                 autoCapitalize="off"
                 spellCheck="false"
+                maxLength={40}
+                pattern="@?[A-Za-z0-9](?:[A-Za-z0-9\-]{0,38})"
+                title="Letters, numbers and hyphens only (a valid GitHub username)"
                 required
               />
               <button type="submit" className="gl-btn">

@@ -11,15 +11,39 @@ import DeveloperPortfolio from './components/DeveloperPortfolio';
 
 const isDeveloperPath = () => window.location.pathname.startsWith('/developer');
 
-const readUrlState = () => {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    username: (params.get('username') || '').trim(),
-    mode: params.get('mode')
-      ? (params.get('mode') === 'dark' ? 'dark' : 'light')
-      : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-  };
+// GitHub usernames: alphanumerics and single hyphens, up to 39 chars
+const USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
+const RESERVED_PATHS = new Set(['developer']);
+
+// Portfolio URLs look like /<username>. Anything else (/, /developer, /a/b) has no username.
+const readUsernameFromPath = () => {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  if (segments.length !== 1) return '';
+  let seg = segments[0];
+  try { seg = decodeURIComponent(seg); } catch { return ''; }
+  return USERNAME_RE.test(seg) && !RESERVED_PATHS.has(seg.toLowerCase()) ? seg : '';
 };
+
+// Theme lives in localStorage (so shared links stay clean); falls back to the system setting.
+const readStoredMode = () => {
+  let stored = null;
+  try { stored = window.localStorage.getItem('theme'); } catch { /* storage unavailable */ }
+  if (stored === 'dark' || stored === 'light') return stored;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+// Old links looked like /?username=foo&mode=dark — redirect them to /foo once on load.
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const legacyUser = (params.get('username') || '').trim();
+  if (window.location.pathname === '/' && USERNAME_RE.test(legacyUser)) {
+    window.history.replaceState({}, '', `/${legacyUser}`);
+    const legacyMode = params.get('mode');
+    if (legacyMode === 'dark' || legacyMode === 'light') {
+      try { window.localStorage.setItem('theme', legacyMode); } catch { /* ignore */ }
+    }
+  }
+})();
 
 const friendlyError = (status, user) => {
   if (status === 404) return `We couldn't find a GitHub user named "${user}". Check the spelling and try again.`;
@@ -29,13 +53,13 @@ const friendlyError = (status, user) => {
 
 function App() {
   // Initialise from the URL so a shared link shows the spinner immediately (no flash of the landing page)
-  const [username, setUsername] = useState(() => readUrlState().username);
-  const [mode, setMode] = useState(() => readUrlState().mode);
+  const [username, setUsername] = useState(readUsernameFromPath);
+  const [mode, setMode] = useState(readStoredMode);
 
   const [inputUsername, setInputUsername] = useState('');
 
   // Phase 2 state
-  const [loading, setLoading] = useState(() => !!readUrlState().username && !isDeveloperPath());
+  const [loading, setLoading] = useState(() => !!readUsernameFromPath() && !isDeveloperPath());
   const [error, setError] = useState(null);
   const [githubData, setGithubData] = useState(null);
 
@@ -92,8 +116,7 @@ function App() {
   // Browser back/forward: re-sync state from the URL
   useEffect(() => {
     const onPopState = () => {
-      const { username: urlUser, mode: urlMode } = readUrlState();
-      setMode(urlMode);
+      const urlUser = readUsernameFromPath();
       setUsername(urlUser);
       if (isDeveloperPath()) return;
       if (urlUser) {
@@ -112,13 +135,13 @@ function App() {
     e.preventDefault();
     if (!inputUsername.trim()) return;
 
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.set('username', inputUsername.trim());
-    newUrl.searchParams.set('mode', mode);
-    window.history.pushState({}, '', newUrl);
+    const name = inputUsername.trim().replace(/^@/, '');
+    if (!USERNAME_RE.test(name)) return;
 
-    setUsername(inputUsername.trim());
-    fetchGitHubData(inputUsername.trim());
+    window.history.pushState({}, '', `/${encodeURIComponent(name)}`);
+
+    setUsername(name);
+    fetchGitHubData(name);
   };
 
 
@@ -227,15 +250,11 @@ function App() {
   const toggleTheme = () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     setMode(newMode);
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.set('mode', newMode);
-    window.history.replaceState({}, '', newUrl);
+    try { window.localStorage.setItem('theme', newMode); } catch { /* ignore */ }
   };
 
   const handleGoBack = () => {
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.delete('username');
-    window.history.pushState({}, '', newUrl);
+    window.history.pushState({}, '', '/');
     setError(null);
     setGithubData(null);
     setUsername('');
