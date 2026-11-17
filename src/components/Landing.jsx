@@ -3,7 +3,7 @@ import PortfolioHeader from './PortfolioHeader';
 
 const FEATURES = [
   { icon: Rocket, title: 'Instant generation', text: 'Your public GitHub data, read in real time and laid out for you.' },
-  { icon: Palette, title: 'Light and dark', text: 'Native themes that keep the focus on your work.' },
+  { icon: Palette, title: 'Clean, responsive design', text: 'A polished layout that looks great on any screen and keeps the focus on your work.' },
   { icon: Link2, title: 'One link to share', text: 'No sign-ups, no deployments. Copy the URL and send it.' },
   { icon: BarChart3, title: 'Language insights', text: 'Top languages and most-starred repositories, ranked on one page.' },
 ];
@@ -11,7 +11,7 @@ const FEATURES = [
 const STEPS = [
   { title: 'Enter a username', text: 'No sign-up and no OAuth permissions.' },
   { title: 'We fetch your data', text: 'Profile and top repositories from the public GitHub REST API.' },
-  { title: 'Share your link', text: 'The URL keeps your username and theme.' },
+  { title: 'Share your link', text: 'Your portfolio lives at a clean /username link.' },
 ];
 
 const AUDIENCE = [
@@ -20,7 +20,7 @@ const AUDIENCE = [
   { title: 'Students and graduates', text: 'Coursework and side projects, presented as a resume supplement.' },
 ];
 
-export default function Landing({ handleStart, inputUsername, setInputUsername, mode, toggleTheme }) {
+export default function Landing({ handleStart, inputUsername, setInputUsername }) {
   const focusInput = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.getElementById('username')?.focus({ preventScroll: true });
@@ -28,7 +28,7 @@ export default function Landing({ handleStart, inputUsername, setInputUsername, 
 
   return (
     <div className="container">
-      <PortfolioHeader mode={mode} toggleTheme={toggleTheme} />
+      <PortfolioHeader />
 
         <main>
           <section className="gl-panel gl-hero" aria-labelledby="hero-title">

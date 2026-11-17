@@ -24,24 +24,12 @@ const readUsernameFromPath = () => {
   return USERNAME_RE.test(seg) && !RESERVED_PATHS.has(seg.toLowerCase()) ? seg : '';
 };
 
-// Theme lives in localStorage (so shared links stay clean); falls back to the system setting.
-const readStoredMode = () => {
-  let stored = null;
-  try { stored = window.localStorage.getItem('theme'); } catch { /* storage unavailable */ }
-  if (stored === 'dark' || stored === 'light') return stored;
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-// Old links looked like /?username=foo&mode=dark — redirect them to /foo once on load.
+// Old links looked like /?username=foo — redirect them to /foo once on load.
 (() => {
   const params = new URLSearchParams(window.location.search);
   const legacyUser = (params.get('username') || '').trim();
   if (window.location.pathname === '/' && USERNAME_RE.test(legacyUser)) {
     window.history.replaceState({}, '', `/${legacyUser}`);
-    const legacyMode = params.get('mode');
-    if (legacyMode === 'dark' || legacyMode === 'light') {
-      try { window.localStorage.setItem('theme', legacyMode); } catch { /* ignore */ }
-    }
   }
 })();
 
@@ -54,7 +42,6 @@ const friendlyError = (status, user) => {
 function App() {
   // Initialise from the URL so a shared link shows the spinner immediately (no flash of the landing page)
   const [username, setUsername] = useState(readUsernameFromPath);
-  const [mode, setMode] = useState(readStoredMode);
 
   const [inputUsername, setInputUsername] = useState('');
 
@@ -99,11 +86,6 @@ function App() {
       setLoading(false);
     }
   };
-
-  // Keep the theme attribute in sync with state
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', mode);
-  }, [mode]);
 
   // Initial load: fetch data for a username supplied in the URL
   useEffect(() => {
@@ -247,12 +229,6 @@ function App() {
     else document.title = 'PortfolioBuilder — Turn your GitHub into a portfolio';
   }, [portfolioName]);
 
-  const toggleTheme = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-    try { window.localStorage.setItem('theme', newMode); } catch { /* ignore */ }
-  };
-
   const handleGoBack = () => {
     window.history.pushState({}, '', '/');
     setError(null);
@@ -271,11 +247,11 @@ function App() {
   };
 
   if (window.location.pathname.startsWith('/developer')) {
-    return <DeveloperPortfolio mode={mode} toggleTheme={toggleTheme} />;
+    return <DeveloperPortfolio />;
   }
 
   if (!username) {
-    return <Landing handleStart={handleStart} inputUsername={inputUsername} setInputUsername={setInputUsername} mode={mode} toggleTheme={toggleTheme} />;
+    return <Landing handleStart={handleStart} inputUsername={inputUsername} setInputUsername={setInputUsername} />;
   }
 
   if (loading) {
@@ -305,7 +281,7 @@ function App() {
 
   return (
     <div className="container">
-      <PortfolioHeader mode={mode} toggleTheme={toggleTheme} handleShare={handleShare} />
+      <PortfolioHeader handleShare={handleShare} />
       <main className="pf">
         <aside className="pf-side">
           <Hero profile={profile} />

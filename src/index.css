@@ -1,11 +1,13 @@
 /* ==========================================================================
-   Black & white glass theme — applied to every page
+   Black & white glass theme (light only) — applied to every page
    Glass structure: .claude/skills/glassmorphism
    Fonts: Plus Jakarta Sans (UI) + JetBrains Mono (labels)
    ========================================================================== */
 
 :root {
-  /* semantic tokens (light) */
+  color-scheme: light;
+
+  /* semantic tokens */
   --gl-base: #F4F4F5;
   --gl-text: #0A0A0A;
   --gl-muted: #52525B;
@@ -34,30 +36,6 @@
   --radius-sm: 14px;
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-}
-
-[data-theme='dark'] {
-  --gl-base: #09090B;
-  --gl-text: #FAFAFA;
-  --gl-muted: #A1A1AA;
-  --gl-accent: #FAFAFA;
-  --gl-accent-hover: #D4D4D8;
-  --gl-accent-text: #FAFAFA;
-  --gl-on-accent: #0A0A0A;
-  --gl-glass: rgba(255, 255, 255, 0.06);
-  --gl-glass-strong: rgba(255, 255, 255, 0.11);
-  --gl-border: rgba(255, 255, 255, 0.14);
-  --gl-line: rgba(255, 255, 255, 0.14);
-  --gl-edge: rgba(255, 255, 255, 0.04);
-  --gl-tint-1: rgba(255, 255, 255, 0.05);
-  --gl-tint-2: rgba(255, 255, 255, 0.09);
-  --gl-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
-  --gl-shadow-hover: 0 16px 40px rgba(0, 0, 0, 0.7);
-  --gl-blob-1: rgba(255, 255, 255, 0.1);
-  --gl-blob-2: rgba(255, 255, 255, 0.06);
-  --dot: #A1A1AA;
-  --danger: #FCA5A5;
-  --ring: #FAFAFA;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -133,7 +111,8 @@ h1, h2, h3, h4 { line-height: 1.15; letter-spacing: -0.02em; }
 /* ---------- Header (shared by every page) ---------- */
 .gl-nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 8px 8px 16px;
+  padding: 12px 20px;
+  min-height: 68px; /* 44px button + 2x12px padding, so the header is the same height with or without the share button */
   border-radius: 16px;
   margin-bottom: var(--sp-5);
 }

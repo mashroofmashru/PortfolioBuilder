@@ -49,10 +49,10 @@ const EDUCATION = [
   { years: '2021 – 2023', title: 'Higher Secondary Education – Bio Science', place: 'Government Higher Secondary School, Koyyam, Kannur' },
 ];
 
-export default function DeveloperPortfolio({ mode, toggleTheme }) {
+export default function DeveloperPortfolio() {
   return (
     <div className="container">
-      <PortfolioHeader mode={mode} toggleTheme={toggleTheme} />
+      <PortfolioHeader />
 
       <main className="pf">
         <aside className="pf-side">
