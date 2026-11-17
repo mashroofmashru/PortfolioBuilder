@@ -1,40 +1,55 @@
 # PortfolioBuilder ⚡
 
-A modern, instant-generation developer portfolio builder built with React and Vite. 
+![PortfolioBuilder home page](docs/screenshot.png)
 
-Stop building portfolios from scratch. Simply provide your GitHub username and **PortfolioBuilder** will instantly fetch your public data, process your top repositories, analyze your frequently used languages, and generate a beautiful, responsive portfolio ready to share with the world.
+**Turn any GitHub profile into a clean, shareable portfolio in seconds.**
 
-![PortfolioBuilder Demo](https://img.shields.io/badge/Status-Active-success) ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-portfolio--builder--rho--gules.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://portfolio-builder-rho-gules.vercel.app)
+
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E) ![Deployed on Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
+
+🔗 **Live site:** [https://portfolio-builder-rho-gules.vercel.app](https://portfolio-builder-rho-gules.vercel.app)
+
+Try it with any GitHub username, for example [`/torvalds`](https://portfolio-builder-rho-gules.vercel.app/torvalds).
+
+## 📖 About
+
+Stop building portfolios from scratch. Enter a GitHub username and **PortfolioBuilder** fetches your public data, ranks your languages, picks out your latest repositories, and lays everything out as a responsive portfolio you can share with a single link. No sign-up, no OAuth and no backend.
 
 ## ✨ Features
 
-- **🚀 Instant Generation**: We fetch your public GitHub data in real-time and construct a beautiful layout based on your repositories, languages, and activity. No OAuth or sign-ups required.
-- **🎨 Beautiful Themes**: Enjoy a responsive design featuring a premium glassmorphism aesthetic, a clean light theme, and a layout that strictly focuses on your work.
-- **🔗 Easy Sharing**: Your generated portfolio acts as a shareable link via a clean URL (`/username`). Just copy the URL and send it to recruiters.
-- **📊 Insights**: Automatically calculates your top languages by repository size and lists your latest repositories.
+- **🚀 Instant generation**: Reads your public GitHub profile and repositories in real time. No OAuth or sign-ups required.
+- **🔗 Clean, shareable URLs**: Every portfolio lives at `/<username>`. Copy the link and send it to recruiters or friends.
+- **📊 Language insights**: Your top languages, shown as proportional bars based on repository size.
+- **🆕 Latest repositories**: Your six most recently updated repositories, with stars, forks, language and last-update date.
+- **👤 Profile at a glance**: Avatar, bio, location, followers, repository count and total stars, plus links to your website, LinkedIn or X when they can be found.
+- **🎨 Glassmorphism design**: A black-and-white frosted-glass interface that is fully responsive from phones to wide desktops.
+- **♿ Accessible**: Keyboard-friendly, visible focus states, labelled controls and reduced-motion support.
+- **🛟 Friendly errors**: Clear messages for unknown usernames, GitHub rate limits and network problems.
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [React 18](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **Styling**: Vanilla CSS with modern CSS Variables and Glassmorphism techniques
+- **Framework**: [React 19](https://react.dev/) + [Vite 8](https://vitejs.dev/)
+- **Styling**: Vanilla CSS with design tokens and glassmorphism techniques
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Data Source**: [GitHub REST API v3](https://docs.github.com/en/rest)
+- **Data source**: [GitHub REST API](https://docs.github.com/en/rest)
+- **Hosting**: [Vercel](https://vercel.com/) (single-page app rewrites in `vercel.json`)
 
 ## 🚀 Getting Started
 
-Follow these instructions to run the project locally.
+Follow these steps to run the project locally.
 
 ### Prerequisites
 
-- Node.js (v16.0 or higher)
-- npm or yarn
+- Node.js 20.19+ (or 22.12+)
+- npm
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mashroofmashru/portfolio-builder.git
-   cd portfolio-builder
+   git clone https://github.com/mashroofmashru/PortfolioBuilder.git
+   cd PortfolioBuilder
    ```
 
 2. Install dependencies:
@@ -47,30 +62,44 @@ Follow these instructions to run the project locally.
    npm run dev
    ```
 
-4. Open your browser and visit `http://localhost:5173`.
+4. Open `http://localhost:5173`, or go straight to a portfolio such as `http://localhost:5173/torvalds`.
+
+### Scripts
+
+| Command           | Description                          |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Start the Vite dev server            |
+| `npm run build`   | Create a production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint`    | Run ESLint                           |
+
+## 📝 Usage
+
+1. **Generate**: Open the home page and enter a valid GitHub username (for example `torvalds`).
+2. **Explore**: Browse the profile card, language breakdown and latest repositories.
+3. **Share**: Click the link icon in the header to copy the portfolio URL, or copy it from the address bar.
+
+> **Note:** The app calls the GitHub API without authentication, which allows about 60 requests per hour per IP address. If you hit the limit, wait a while and try again.
 
 ## 📂 Project Structure
 
 ```text
 src/
-├── components/          # Reusable UI sections
-│   ├── Contact.jsx      # Maps social/portfolio links
-│   ├── Hero.jsx         # Profile card: avatar, bio, and stats from GitHub
-│   ├── Landing.jsx      # Homepage layout with feature cards and input form
-│   ├── PortfolioHeader.jsx # Top navigation with logo and share button
-│   ├── Projects.jsx     # Latest repositories grid
-│   └── Skills.jsx       # Top languages with usage bars
-├── App.jsx              # Main routing, logic, and data fetching component
-├── index.css            # Global application styles, CSS variables, and themes
-└── main.jsx             # React entry point
+├── components/            # UI sections
+│   ├── Contact.jsx        # Website / LinkedIn / X links
+│   ├── Hero.jsx           # Profile card: avatar, bio and stats
+│   ├── Icons.jsx          # Inline brand icons (GitHub, LinkedIn, X)
+│   ├── Landing.jsx        # Home page with the username form
+│   ├── PortfolioHeader.jsx # Top bar with logo and share button
+│   ├── Projects.jsx       # Latest repositories grid
+│   └── Skills.jsx         # Top languages with usage bars
+├── App.jsx                # Routing, data fetching and data transforms
+├── index.css              # Design tokens and all styles
+└── main.jsx               # React entry point
+docs/
+└── screenshot.png         # README screenshot
 ```
 
-## 📝 Usage
+## ☁️ Deployment
 
-1. **Generate**: Visit the homepage and enter any valid GitHub username (e.g., `torvalds`).
-2. **Customize**: Toggle the theme using the sun/moon icon in the top right.
-3. **Share**: Click the link icon in the header to instantly copy the current portfolio URL to your clipboard.
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
+The project is deployed on Vercel. `vercel.json` rewrites every path to `index.html`, so URLs like `/username` work on refresh and when shared. To deploy your own copy, import the repository into Vercel and keep the default Vite settings (build command `npm run build`, output directory `dist`).
