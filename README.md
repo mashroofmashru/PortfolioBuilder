@@ -9,10 +9,9 @@ Stop building portfolios from scratch. Simply provide your GitHub username and *
 ## ✨ Features
 
 - **🚀 Instant Generation**: We fetch your public GitHub data in real-time and construct a beautiful layout based on your repositories, languages, and activity. No OAuth or sign-ups required.
-- **🎨 Beautiful Themes**: Enjoy a responsive design featuring a premium glassmorphism aesthetic, native dark/light modes, and a layout that strictly focuses on your work.
-- **🔗 Easy Sharing**: Your generated portfolio acts as a shareable link via URL parameters (`?username=...&mode=...`). Just copy the URL and send it to recruiters.
-- **📊 Insights & Activity**: Automatically calculates your top languages by repository prevalence and summarizes your recent GitHub contributions into a clean timeline.
-- **👨‍💻 Custom Developer Route**: Includes a specialized `/developer` route that renders a hardcoded, highly detailed professional resume native to the application formatting.
+- **🎨 Beautiful Themes**: Enjoy a responsive design featuring a premium glassmorphism aesthetic, a clean light theme, and a layout that strictly focuses on your work.
+- **🔗 Easy Sharing**: Your generated portfolio acts as a shareable link via a clean URL (`/username`). Just copy the URL and send it to recruiters.
+- **📊 Insights**: Automatically calculates your top languages by repository size and lists your latest repositories.
 
 ## 🛠️ Tech Stack
 
@@ -55,14 +54,12 @@ Follow these instructions to run the project locally.
 ```text
 src/
 ├── components/          # Reusable UI sections
-│   ├── Activity.jsx     # Renders the GitHub events timeline
 │   ├── Contact.jsx      # Maps social/portfolio links
-│   ├── DeveloperPortfolio.jsx # Custom hardcoded developer resume route
-│   ├── Hero.jsx         # Profile avatar, bio, and stats from GitHub
+│   ├── Hero.jsx         # Profile card: avatar, bio, and stats from GitHub
 │   ├── Landing.jsx      # Homepage layout with feature cards and input form
-│   ├── PortfolioHeader.jsx # Top navigation with theme toggle and share buttons
-│   ├── Projects.jsx     # Top 6 starred repositories grid
-│   └── Skills.jsx       # Extracted top languages bubbles
+│   ├── PortfolioHeader.jsx # Top navigation with logo and share button
+│   ├── Projects.jsx     # Latest repositories grid
+│   └── Skills.jsx       # Top languages with usage bars
 ├── App.jsx              # Main routing, logic, and data fetching component
 ├── index.css            # Global application styles, CSS variables, and themes
 └── main.jsx             # React entry point

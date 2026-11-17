@@ -5,18 +5,18 @@ const FEATURES = [
   { icon: Rocket, title: 'Instant generation', text: 'Your public GitHub data, read in real time and laid out for you.' },
   { icon: Palette, title: 'Clean, responsive design', text: 'A polished layout that looks great on any screen and keeps the focus on your work.' },
   { icon: Link2, title: 'One link to share', text: 'No sign-ups, no deployments. Copy the URL and send it.' },
-  { icon: BarChart3, title: 'Language insights', text: 'Top languages and most-starred repositories, ranked on one page.' },
+  { icon: BarChart3, title: 'Language insights', text: 'Top languages and your latest repositories, all on one page.' },
 ];
 
 const STEPS = [
   { title: 'Enter a username', text: 'No sign-up and no OAuth permissions.' },
-  { title: 'We fetch your data', text: 'Profile and top repositories from the public GitHub REST API.' },
+  { title: 'We fetch your data', text: 'Profile and repositories from the public GitHub REST API.' },
   { title: 'Share your link', text: 'Your portfolio lives at a clean /username link.' },
 ];
 
 const AUDIENCE = [
   { title: 'Job hunters', text: 'A clean summary for recruiters instead of a raw GitHub profile.' },
-  { title: 'Open-source contributors', text: 'Your most-starred packages and the languages you use.' },
+  { title: 'Open-source contributors', text: 'Your latest repositories and the languages you use.' },
   { title: 'Students and graduates', text: 'Coursework and side projects, presented as a resume supplement.' },
 ];
 

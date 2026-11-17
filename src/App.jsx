@@ -5,23 +5,18 @@ import PortfolioHeader from './components/PortfolioHeader';
 import Hero from './components/Hero';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
-import Activity from './components/Activity';
 import Contact from './components/Contact';
-import DeveloperPortfolio from './components/DeveloperPortfolio';
-
-const isDeveloperPath = () => window.location.pathname.startsWith('/developer');
 
 // GitHub usernames: alphanumerics and single hyphens, up to 39 chars
 const USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
-const RESERVED_PATHS = new Set(['developer']);
 
-// Portfolio URLs look like /<username>. Anything else (/, /developer, /a/b) has no username.
+// Portfolio URLs look like /<username>. Anything else (/, /a/b) has no username.
 const readUsernameFromPath = () => {
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length !== 1) return '';
   let seg = segments[0];
   try { seg = decodeURIComponent(seg); } catch { return ''; }
-  return USERNAME_RE.test(seg) && !RESERVED_PATHS.has(seg.toLowerCase()) ? seg : '';
+  return USERNAME_RE.test(seg) ? seg : '';
 };
 
 // Old links looked like /?username=foo — redirect them to /foo once on load.
@@ -46,7 +41,7 @@ function App() {
   const [inputUsername, setInputUsername] = useState('');
 
   // Phase 2 state
-  const [loading, setLoading] = useState(() => !!readUsernameFromPath() && !isDeveloperPath());
+  const [loading, setLoading] = useState(() => !!readUsernameFromPath());
   const [error, setError] = useState(null);
   const [githubData, setGithubData] = useState(null);
 
@@ -56,7 +51,7 @@ function App() {
     setGithubData(null);
     try {
       // Check cache first
-      const cacheKey = `githubData_v2_${user}`;
+      const cacheKey = `githubData_v3_${user}`;
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         setGithubData(JSON.parse(cached));
@@ -71,13 +66,12 @@ function App() {
         return res.json();
       });
 
-      const [profile, repos, events] = await Promise.all([
+      const [profile, repos] = await Promise.all([
         getApi(`/users/${encodeURIComponent(user)}`),
-        getApi(`/users/${encodeURIComponent(user)}/repos?sort=pushed&per_page=100`),
-        getApi(`/users/${encodeURIComponent(user)}/events?per_page=10`)
+        getApi(`/users/${encodeURIComponent(user)}/repos?sort=pushed&per_page=100`)
       ]);
 
-      const data = { profile, repos, events };
+      const data = { profile, repos };
       sessionStorage.setItem(cacheKey, JSON.stringify(data));
       setGithubData(data);
     } catch (err) {
@@ -89,7 +83,7 @@ function App() {
 
   // Initial load: fetch data for a username supplied in the URL
   useEffect(() => {
-    if (username && !isDeveloperPath()) {
+    if (username) {
       fetchGitHubData(username);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,7 +94,6 @@ function App() {
     const onPopState = () => {
       const urlUser = readUsernameFromPath();
       setUsername(urlUser);
-      if (isDeveloperPath()) return;
       if (urlUser) {
         fetchGitHubData(urlUser);
       } else {
@@ -129,7 +122,7 @@ function App() {
 
   const transformData = (data) => {
     if (!data) return null;
-    const { profile, repos, events } = data;
+    const { profile, repos } = data;
 
     // Latest repositories: most recently pushed non-forks (or forks if all are forks)
     let projectContenders = repos.filter(r => !r.fork);
@@ -164,16 +157,13 @@ function App() {
     const langTotal = rankedLangs.reduce((sum, [, size]) => sum + size, 0) || 1;
     const topSkills = rankedLangs.map(([name, size]) => ({ name, pct: Math.max(1, Math.round((size / langTotal) * 100)) }));
 
-    // Activity: last 5-10 meaningful events
-    const meaningfulEvents = events.filter(e =>
-      ['PushEvent', 'PullRequestEvent', 'IssuesEvent', 'ReleaseEvent', 'CreateEvent'].includes(e.type)
-    ).slice(0, 10);
-
     // Links
     const links = [];
     if (profile.blog) {
       const url = profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`;
-      links.push({ type: 'website', url });
+      let label;
+      try { label = new URL(url).hostname.replace(/^www\./, ''); } catch { label = undefined; }
+      links.push({ type: 'website', url, label });
     }
     if (profile.twitter_username) {
       links.push({ type: 'twitter', url: `https://twitter.com/${profile.twitter_username}`, label: `@${profile.twitter_username}` });
@@ -204,7 +194,6 @@ function App() {
       },
       projects: latestProjects.map(mapProject),
       skills: topSkills,
-      activity: meaningfulEvents,
       links
     };
   };
@@ -224,8 +213,7 @@ function App() {
   // Per-portfolio page title
   const portfolioName = parsedPortfolio?.profile.name;
   useEffect(() => {
-    if (isDeveloperPath()) document.title = 'Mashroof PP — Developer Portfolio';
-    else if (portfolioName) document.title = `${portfolioName} — Portfolio`;
+    if (portfolioName) document.title = `${portfolioName} — Portfolio`;
     else document.title = 'PortfolioBuilder — Turn your GitHub into a portfolio';
   }, [portfolioName]);
 
@@ -245,10 +233,6 @@ function App() {
       showToast('Could not copy. Copy the URL from the address bar.');
     }
   };
-
-  if (window.location.pathname.startsWith('/developer')) {
-    return <DeveloperPortfolio />;
-  }
 
   if (!username) {
     return <Landing handleStart={handleStart} inputUsername={inputUsername} setInputUsername={setInputUsername} />;
@@ -290,7 +274,6 @@ function App() {
         <div className="pf-main">
           <Skills skills={skills} />
           <Projects projects={projects} />
-          {/* <Activity activity={activity} /> */}
         </div>
       </main>
 
