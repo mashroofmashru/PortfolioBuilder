@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import Landing from './components/Landing';
 import PortfolioHeader from './components/PortfolioHeader';
@@ -9,23 +9,43 @@ import Activity from './components/Activity';
 import Contact from './components/Contact';
 import DeveloperPortfolio from './components/DeveloperPortfolio';
 
+const isDeveloperPath = () => window.location.pathname.startsWith('/developer');
+
+const readUrlState = () => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    username: (params.get('username') || '').trim(),
+    mode: params.get('mode')
+      ? (params.get('mode') === 'dark' ? 'dark' : 'light')
+      : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  };
+};
+
+const friendlyError = (status, user) => {
+  if (status === 404) return `We couldn't find a GitHub user named "${user}". Check the spelling and try again.`;
+  if (status === 403 || status === 429) return 'GitHub rate limit reached (60 requests per hour without authentication). Please wait a while and try again.';
+  return `GitHub returned an unexpected error (${status}). Please try again later.`;
+};
+
 function App() {
-  const [username, setUsername] = useState('');
-  const [mode, setMode] = useState('light');
+  // Initialise from the URL so a shared link shows the spinner immediately (no flash of the landing page)
+  const [username, setUsername] = useState(() => readUrlState().username);
+  const [mode, setMode] = useState(() => readUrlState().mode);
 
   const [inputUsername, setInputUsername] = useState('');
 
   // Phase 2 state
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => !!readUrlState().username && !isDeveloperPath());
   const [error, setError] = useState(null);
   const [githubData, setGithubData] = useState(null);
 
   const fetchGitHubData = async (user) => {
     setLoading(true);
     setError(null);
+    setGithubData(null);
     try {
       // Check cache first
-      const cacheKey = `githubData_${user}`;
+      const cacheKey = `githubData_v2_${user}`;
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         setGithubData(JSON.parse(cached));
@@ -36,42 +56,56 @@ function App() {
       const headers = { Accept: 'application/vnd.github.v3+json' };
 
       const getApi = (endpoint) => fetch(`https://api.github.com${endpoint}`, { headers }).then(res => {
-        if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`);
+        if (!res.ok) throw new Error(friendlyError(res.status, user));
         return res.json();
       });
 
       const [profile, repos, events] = await Promise.all([
-        getApi(`/users/${user}`),
-        getApi(`/users/${user}/repos?sort=stars&per_page=30`),
-        getApi(`/users/${user}/events?per_page=10`)
+        getApi(`/users/${encodeURIComponent(user)}`),
+        getApi(`/users/${encodeURIComponent(user)}/repos?sort=pushed&per_page=100`),
+        getApi(`/users/${encodeURIComponent(user)}/events?per_page=10`)
       ]);
 
       const data = { profile, repos, events };
       sessionStorage.setItem(cacheKey, JSON.stringify(data));
       setGithubData(data);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof TypeError ? 'Network error. Please check your connection and try again.' : err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 1. Parse URL params on load
+  // Keep the theme attribute in sync with state
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlUsername = params.get('username') || '';
-    const urlMode = params.get('mode') || 'light';
+    document.documentElement.setAttribute('data-theme', mode);
+  }, [mode]);
 
-    setUsername(urlUsername);
-    setMode(urlMode);
-
-    document.documentElement.setAttribute('data-theme', urlMode);
-
-    const isDeveloperMode = window.location.pathname.startsWith('/developer');
-
-    if (urlUsername && !isDeveloperMode) {
-      fetchGitHubData(urlUsername);
+  // Initial load: fetch data for a username supplied in the URL
+  useEffect(() => {
+    if (username && !isDeveloperPath()) {
+      fetchGitHubData(username);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Browser back/forward: re-sync state from the URL
+  useEffect(() => {
+    const onPopState = () => {
+      const { username: urlUser, mode: urlMode } = readUrlState();
+      setMode(urlMode);
+      setUsername(urlUser);
+      if (isDeveloperPath()) return;
+      if (urlUser) {
+        fetchGitHubData(urlUser);
+      } else {
+        setGithubData(null);
+        setError(null);
+        setLoading(false);
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const handleStart = (e) => {
@@ -92,10 +126,24 @@ function App() {
     if (!data) return null;
     const { profile, repos, events } = data;
 
-    // Top Projects: top 6 non-forks (or forks if all are forks) sorted by stars
+    // Latest repositories: most recently pushed non-forks (or forks if all are forks)
     let projectContenders = repos.filter(r => !r.fork);
     if (projectContenders.length === 0) projectContenders = repos;
-    const topProjects = projectContenders.sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 6);
+    const latestProjects = [...projectContenders]
+      .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
+      .slice(0, 6);
+
+    const mapProject = (p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      stars: p.stargazers_count,
+      forks: p.forks_count,
+      language: p.language,
+      url: p.html_url,
+      homepage: p.homepage,
+      pushedAt: p.pushed_at,
+    });
 
     // Skills
     const langCounts = {};
@@ -105,10 +153,11 @@ function App() {
         langCounts[r.language] = (langCounts[r.language] || 0) + (r.size || 1);
       }
     });
-    const topSkills = Object.entries(langCounts)
+    const rankedLangs = Object.entries(langCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(entry => entry[0]);
+      .slice(0, 8);
+    const langTotal = rankedLangs.reduce((sum, [, size]) => sum + size, 0) || 1;
+    const topSkills = rankedLangs.map(([name, size]) => ({ name, pct: Math.max(1, Math.round((size / langTotal) * 100)) }));
 
     // Activity: last 5-10 meaningful events
     const meaningfulEvents = events.filter(e =>
@@ -139,22 +188,16 @@ function App() {
     return {
       profile: {
         name: profile.name || profile.login,
+        login: profile.login,
         avatar: profile.avatar_url,
         bio: profile.bio,
         location: profile.location,
         githubUrl: profile.html_url,
         followers: profile.followers,
+        publicRepos: profile.public_repos,
+        totalStars: repos.reduce((sum, r) => sum + (r.stargazers_count || 0), 0),
       },
-      projects: topProjects.map(p => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        stars: p.stargazers_count,
-        forks: p.forks_count,
-        language: p.language,
-        url: p.html_url,
-        homepage: p.homepage
-      })),
+      projects: latestProjects.map(mapProject),
       skills: topSkills,
       activity: meaningfulEvents,
       links
@@ -165,39 +208,62 @@ function App() {
 
 
   const [toast, setToast] = useState('');
+  const toastTimer = useRef(null);
 
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 3000);
   };
+
+  // Per-portfolio page title
+  const portfolioName = parsedPortfolio?.profile.name;
+  useEffect(() => {
+    if (isDeveloperPath()) document.title = 'Mashroof PP — Developer Portfolio';
+    else if (portfolioName) document.title = `${portfolioName} — Portfolio`;
+    else document.title = 'PortfolioBuilder — Turn your GitHub into a portfolio';
+  }, [portfolioName]);
 
   const toggleTheme = () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     setMode(newMode);
-    document.documentElement.setAttribute('data-theme', newMode);
     const newUrl = new URL(window.location);
     newUrl.searchParams.set('mode', newMode);
-    window.history.pushState({}, '', newUrl);
+    window.history.replaceState({}, '', newUrl);
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Portfolio URL copied to clipboard!');
+  const handleGoBack = () => {
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.delete('username');
+    window.history.pushState({}, '', newUrl);
+    setError(null);
+    setGithubData(null);
+    setUsername('');
+    setInputUsername('');
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast('Portfolio URL copied to clipboard!');
+    } catch {
+      showToast('Could not copy. Copy the URL from the address bar.');
+    }
   };
 
   if (window.location.pathname.startsWith('/developer')) {
-    return <DeveloperPortfolio mode={mode} toggleTheme={toggleTheme} handleShare={handleShare} />;
+    return <DeveloperPortfolio mode={mode} toggleTheme={toggleTheme} />;
   }
 
   if (!username) {
-    return <Landing handleStart={handleStart} inputUsername={inputUsername} setInputUsername={setInputUsername} />;
+    return <Landing handleStart={handleStart} inputUsername={inputUsername} setInputUsername={setInputUsername} mode={mode} toggleTheme={toggleTheme} />;
   }
 
   if (loading) {
     return (
-      <div className="container loading-view">
+      <div className="container loading-view" role="status" aria-live="polite">
         <div className="spinner"></div>
-        <h2>Building portfolio for {username}...</h2>
+        <h2>Building portfolio for {username}…</h2>
       </div>
     );
   }
@@ -205,28 +271,35 @@ function App() {
   if (error) {
     return (
       <div className="container loading-view">
-        <h2 style={{ color: 'var(--error)' }}>Whoops! Error loading data.</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.href = '/'} className="btn-primary" style={{ marginTop: '2rem', maxWidth: '200px' }}>Go Back</button>
+        <div className="tile error-tile" role="alert">
+          <h2>Couldn't load this portfolio</h2>
+          <p>{error}</p>
+          <button type="button" onClick={handleGoBack} className="btn">Try another username</button>
+        </div>
       </div>
     );
   }
 
   if (!parsedPortfolio) return null;
 
-  const { profile, projects, skills, activity, links } = parsedPortfolio;
-  const isDeveloperMode = window.location.pathname.startsWith('/developer');
+  const { profile, projects, skills, links } = parsedPortfolio;
 
   return (
     <div className="container">
-      <PortfolioHeader profile={profile} mode={mode} toggleTheme={toggleTheme} handleShare={handleShare} />
-      <Hero profile={profile} />
-      <Skills skills={skills} />
-      <Projects projects={projects} />
-      {/* <Activity activity={activity} /> */}
-      <Contact links={links} />
+      <PortfolioHeader mode={mode} toggleTheme={toggleTheme} handleShare={handleShare} />
+      <main className="pf">
+        <aside className="pf-side">
+          <Hero profile={profile} />
+          <Contact links={links} />
+        </aside>
+        <div className="pf-main">
+          <Skills skills={skills} />
+          <Projects projects={projects} />
+          {/* <Activity activity={activity} /> */}
+        </div>
+      </main>
 
-      <div className={`toast ${toast ? 'show' : ''}`}>{toast}</div>
+      <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">{toast}</div>
     </div>
   );
 }

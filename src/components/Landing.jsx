@@ -1,133 +1,117 @@
-export default function Landing({ handleStart, inputUsername, setInputUsername }) {
+import { Rocket, Palette, Link2, BarChart3, ArrowRight } from 'lucide-react';
+import PortfolioHeader from './PortfolioHeader';
+
+const FEATURES = [
+  { icon: Rocket, title: 'Instant generation', text: 'Your public GitHub data, read in real time and laid out for you.' },
+  { icon: Palette, title: 'Light and dark', text: 'Native themes that keep the focus on your work.' },
+  { icon: Link2, title: 'One link to share', text: 'No sign-ups, no deployments. Copy the URL and send it.' },
+  { icon: BarChart3, title: 'Language insights', text: 'Top languages and most-starred repositories, ranked on one page.' },
+];
+
+const STEPS = [
+  { title: 'Enter a username', text: 'No sign-up and no OAuth permissions.' },
+  { title: 'We fetch your data', text: 'Profile and top repositories from the public GitHub REST API.' },
+  { title: 'Share your link', text: 'The URL keeps your username and theme.' },
+];
+
+const AUDIENCE = [
+  { title: 'Job hunters', text: 'A clean summary for recruiters instead of a raw GitHub profile.' },
+  { title: 'Open-source contributors', text: 'Your most-starred packages and the languages you use.' },
+  { title: 'Students and graduates', text: 'Coursework and side projects, presented as a resume supplement.' },
+];
+
+export default function Landing({ handleStart, inputUsername, setInputUsername, mode, toggleTheme }) {
+  const focusInput = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('username')?.focus({ preventScroll: true });
+  };
+
   return (
-    <div className="home-layout">
-      <header className="home-header">
-        <div className="container">
-          <h1 className="home-logo">PortfolioBuilder ⚡</h1>
-          <p className="home-tagline">Stop building portfolios from scratch. Provide your GitHub username and instantly generate a stunning, responsive portfolio ready to share with the world.</p>
-        </div>
-      </header>
+    <div className="container">
+      <PortfolioHeader mode={mode} toggleTheme={toggleTheme} />
 
-      <main className="container home-main">
-        <div className="home-hero-grid">
-          {/* Input Section */}
-          <div className="landing-card home-card">
-            <h2>Generate Yours Now</h2>
-            <p>It's completely free. Just enter your username.</p>
-            
-            <form onSubmit={handleStart}>
-              <div className="form-group">
-                <label htmlFor="username">GitHub Username *</label>
-                <input 
-                  id="username"
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. torvalds"
-                  value={inputUsername}
-                  onChange={(e) => setInputUsername(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <button type="submit" className="btn-primary">Generate Portfolio</button>
+        <main>
+          <section className="gl-panel gl-hero" aria-labelledby="hero-title">
+            <p className="gl-eyebrow">GitHub → Portfolio</p>
+            <h1 id="hero-title">Your GitHub, as a <span>portfolio</span> worth sharing.</h1>
+            <p className="gl-sub">Enter a username. Get a responsive, shareable portfolio in seconds.</p>
+            <form className="gl-form" onSubmit={handleStart}>
+              <label htmlFor="username" className="sr-only">GitHub username</label>
+              <input
+                id="username"
+                type="text"
+                placeholder="github-username"
+                value={inputUsername}
+                onChange={(e) => setInputUsername(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                required
+              />
+              <button type="submit" className="gl-btn">
+                Generate <ArrowRight size={18} aria-hidden="true" />
+              </button>
             </form>
-          </div>
+            <ul className="gl-pills">
+              <li>Free</li>
+              <li>No sign-up</li>
+              <li>Public data only</li>
+            </ul>
+          </section>
 
-          {/* Features Info Section */}
-          <div className="section" style={{ marginTop: '5rem', animationDelay: '0.2s' }}>
-            <h2 className="section-title" style={{ justifyContent: 'center' }}>
-              <span style={{ display: 'none' }}></span>
-              Why Choose PortfolioBuilder?
-              <span style={{ display: 'none' }}></span>
-            </h2>
-            <div className="features-grid">
-              <div className="feature-item">
-                <div className="feature-icon">🚀</div>
-                <h3>Instant Generation</h3>
-                <p>We fetch your public GitHub data in real-time and construct a beautiful layout based on your repositories, languages, and activity.</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">🎨</div>
-                <h3>Beautiful Themes</h3>
-                <p>Enjoy a responsive design featuring glassmorphism, native dark/light modes, and a layout that focuses entirely on your work.</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">🔗</div>
-                <h3>Easy Sharing</h3>
-                <p>Your generated portfolio acts as a shareable link. No sign ups, no deployments necessary. Just copy the URL and send it to recruiters.</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">📊</div>
-                <h3>Insights & Activity</h3>
-                <p>We automatically calculate your top languages and summarize your recent GitHub contributions all on one page.</p>
-              </div>
+          <section className="gl-section" aria-labelledby="features-title">
+            <h2 className="gl-title" id="features-title">Why PortfolioBuilder</h2>
+            <div className="gl-grid gl-grid--4">
+              {FEATURES.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <article className="gl-panel gl-card" key={f.title}>
+                    <span className="gl-badge"><Icon size={20} aria-hidden="true" /></span>
+                    <h3>{f.title}</h3>
+                    <p>{f.text}</p>
+                  </article>
+                );
+              })}
             </div>
-          </div>
+          </section>
 
-          {/* How It Works Section */}
-          <div className="section" style={{ marginTop: '4rem', animationDelay: '0.3s' }}>
-            <h2 className="section-title" style={{ justifyContent: 'center' }}>
-              <span style={{ display: 'none' }}></span>
-              How It Works
-              <span style={{ display: 'none' }}></span>
-            </h2>
-            <div className="steps-container">
-              <div className="step-card">
-                <div className="step-number">1</div>
-                <h4>Provide Username</h4>
-                <p>Simply type in your GitHub username above. No tedious sign-ups or OAuth permissions required.</p>
-              </div>
-              <div className="step-card">
-                <div className="step-number">2</div>
-                <h4>We Fetch Your Data</h4>
-                <p>Our site queries the public GitHub REST API for your profile, top-starred repositories, and latest events.</p>
-              </div>
-              <div className="step-card">
-                <div className="step-number">3</div>
-                <h4>Share Your Link</h4>
-                <p>Your beautiful portfolio is created instantly. The URL saves your state, ready to be sent to anyone.</p>
-              </div>
+          <section className="gl-section" aria-labelledby="how-title">
+            <h2 className="gl-title" id="how-title">How it works</h2>
+            <ol className="gl-panel gl-steps">
+              {STEPS.map((s, i) => (
+                <li key={s.title}>
+                  <span className="gl-num">0{i + 1}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="gl-section" aria-labelledby="who-title">
+            <h2 className="gl-title" id="who-title">Who it's for</h2>
+            <div className="gl-grid gl-grid--3">
+              {AUDIENCE.map((a) => (
+                <article className="gl-panel gl-card" key={a.title}>
+                  <h3>{a.title}</h3>
+                  <p>{a.text}</p>
+                </article>
+              ))}
             </div>
-          </div>
+          </section>
 
-          {/* Audience Section */}
-          <div className="section" style={{ marginTop: '4rem', animationDelay: '0.4s', textAlign: 'center' }}>
-            <h2 className="section-title" style={{ justifyContent: 'center' }}>
-              <span style={{ display: 'none' }}></span>
-              Who Is This For?
-              <span style={{ display: 'none' }}></span>
-            </h2>
-            <div className="audience-grid">
-              <div className="audience-card">
-                <h4>💼 Job Hunters</h4>
-                <p>Stand out to recruiters with a clean, professional summary of your code, instead of just a raw GitHub profile.</p>
-              </div>
-              <div className="audience-card">
-                <h4>🔥 OSS Contributors</h4>
-                <p>Showcase your latest pull requests, issues, and top starred packages in a beautiful timeline.</p>
-              </div>
-              <div className="audience-card">
-                <h4>🎓 Students & Grads</h4>
-                <p>Turn your school assignments and personal projects into a compelling resume supplement automatically.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="cta-banner" style={{ marginTop: '3rem', textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-color)' }}>Ready to look professional?</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Scroll back up to the top and generate your free portfolio in 3 seconds flat.</p>
-            <button className="btn-primary" style={{ maxWidth: '250px' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              Get Started Now
+          <section className="gl-panel gl-cta" aria-labelledby="cta-title">
+            <h2 id="cta-title">Ready when you are.</h2>
+            <button type="button" className="gl-btn" onClick={focusInput}>
+              Generate your portfolio <ArrowRight size={18} aria-hidden="true" />
             </button>
-          </div>
-        </div>
-      </main>
-      
-      <footer className="home-footer">
-        <p>Built with React & GitHub REST API. 
-           &nbsp;•&nbsp; <a href="/developer" style={{ color: 'var(--accent-color)', fontWeight: 500, textDecoration: 'none' }}>About the Developer</a>
-        </p>
-      </footer>
+          </section>
+        </main>
+
+        <footer className="gl-footer">
+          <span>Built with React &amp; the GitHub REST API</span>
+          <a href="https://mashroof.in">About the developer</a>
+        </footer>
     </div>
   );
 }
