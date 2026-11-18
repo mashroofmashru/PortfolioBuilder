@@ -2,6 +2,8 @@
 
 ![PortfolioBuilder home page](docs/screenshot.png)
 
+![A generated portfolio page](docs/portfolio.png)
+
 **Turn any GitHub profile into a clean, shareable portfolio in seconds.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-portfolio--builder--rho--gules.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://portfolio-builder-rho-gules.vercel.app)
@@ -97,7 +99,8 @@ src/
 ├── index.css              # Design tokens and all styles
 └── main.jsx               # React entry point
 docs/
-└── screenshot.png         # README screenshot
+├── screenshot.png         # README screenshot: home page
+└── portfolio.png          # README screenshot: generated portfolio
 ```
 
 ## ☁️ Deployment
