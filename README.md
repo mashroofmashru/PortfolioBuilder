@@ -87,20 +87,33 @@ Follow these steps to run the project locally.
 
 ```text
 src/
-├── components/            # UI sections
-│   ├── Contact.jsx        # Website / LinkedIn / X links
-│   ├── Hero.jsx           # Profile card: avatar, bio and stats
-│   ├── Icons.jsx          # Inline brand icons (GitHub, LinkedIn, X)
-│   ├── Landing.jsx        # Home page with the username form
-│   ├── PortfolioHeader.jsx # Top bar with logo and share button
-│   ├── Projects.jsx       # Latest repositories grid
-│   └── Skills.jsx         # Top languages with usage bars
-├── App.jsx                # Routing, data fetching and data transforms
-├── index.css              # Design tokens and all styles
-└── main.jsx               # React entry point
+├── components/              # UI (presentational)
+│   ├── Contact.jsx          # Website / LinkedIn / X links
+│   ├── Hero.jsx             # Profile card: avatar, bio and stats
+│   ├── Icons.jsx            # Inline brand icons (GitHub, LinkedIn, X)
+│   ├── Landing.jsx          # Home page with the username form
+│   ├── Portfolio.jsx        # The generated portfolio page (layout + share toast)
+│   ├── PortfolioHeader.jsx  # Top bar with logo and share button
+│   ├── ProjectCard.jsx      # A single repository card
+│   ├── Projects.jsx         # Latest repositories grid
+│   ├── Skills.jsx           # Top languages with usage bars
+│   └── StatusViews.jsx      # Loading and error screens
+├── hooks/                   # React state and side effects
+│   ├── useDocumentTitle.js  # Sets the page title
+│   ├── usePortfolio.js      # Username <-> URL sync, loading, errors, data
+│   └── useToast.js          # Self-clearing toast message
+├── lib/                     # Pure logic, no React
+│   ├── format.js            # Number and date formatting
+│   ├── github.js            # GitHub API calls, caching, error messages
+│   ├── languageColors.js    # Colours for common languages
+│   ├── portfolio.js         # Raw API data -> display data
+│   └── routing.js           # /<username> URL helpers and validation
+├── App.jsx                  # Picks the screen: landing, loading, error or portfolio
+├── index.css                # Design tokens and all styles
+└── main.jsx                 # React entry point
 docs/
-├── screenshot.png         # README screenshot: home page
-└── portfolio.png          # README screenshot: generated portfolio
+├── screenshot.png           # README screenshot: home page
+└── portfolio.png            # README screenshot: generated portfolio
 ```
 
 ## ☁️ Deployment

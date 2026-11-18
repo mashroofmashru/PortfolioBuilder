@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { GithubIcon } from './Icons';
-
-const nf = new Intl.NumberFormat('en-US', { notation: 'compact' });
+import { formatCount } from '../lib/format';
 
 // Sticky profile card shown in the sidebar.
 export default function Hero({ profile }) {
@@ -33,9 +32,9 @@ export default function Hero({ profile }) {
       )}
 
       <ul className="pf-stats">
-        <li><strong>{nf.format(profile.followers ?? 0)}</strong><span>Followers</span></li>
-        <li><strong>{nf.format(profile.publicRepos ?? 0)}</strong><span>Repos</span></li>
-        <li><strong>{nf.format(profile.totalStars ?? 0)}</strong><span>Stars</span></li>
+        <li><strong>{formatCount(profile.followers ?? 0)}</strong><span>Followers</span></li>
+        <li><strong>{formatCount(profile.publicRepos ?? 0)}</strong><span>Repos</span></li>
+        <li><strong>{formatCount(profile.totalStars ?? 0)}</strong><span>Stars</span></li>
       </ul>
 
       <a className="gl-btn pf-btn" href={profile.githubUrl} target="_blank" rel="noreferrer">

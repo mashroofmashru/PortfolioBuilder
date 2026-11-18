@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Rocket, Palette, Link2, BarChart3, ArrowRight } from 'lucide-react';
 import PortfolioHeader from './PortfolioHeader';
 
@@ -20,7 +21,14 @@ const AUDIENCE = [
   { title: 'Students and graduates', text: 'Coursework and side projects, presented as a resume supplement.' },
 ];
 
-export default function Landing({ handleStart, inputUsername, setInputUsername }) {
+export default function Landing({ onStart }) {
+  const [username, setUsername] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onStart(username);
+  };
+
   const focusInput = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.getElementById('username')?.focus({ preventScroll: true });
@@ -35,14 +43,14 @@ export default function Landing({ handleStart, inputUsername, setInputUsername }
             <p className="gl-eyebrow">GitHub → Portfolio</p>
             <h1 id="hero-title">Your GitHub, as a <span>portfolio</span> worth sharing.</h1>
             <p className="gl-sub">Enter a username. Get a responsive, shareable portfolio in seconds.</p>
-            <form className="gl-form" onSubmit={handleStart}>
+            <form className="gl-form" onSubmit={handleSubmit}>
               <label htmlFor="username" className="sr-only">GitHub username</label>
               <input
                 id="username"
                 type="text"
                 placeholder="github-username"
-                value={inputUsername}
-                onChange={(e) => setInputUsername(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 autoComplete="off"
                 autoCapitalize="off"
                 spellCheck="false"
